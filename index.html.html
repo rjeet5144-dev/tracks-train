@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundSphere - Music Streaming</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #121212;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #000;
+            padding: 20px 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            padding: 0 24px 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1db954;
+            margin-bottom: 30px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(28, 185, 84, 0.1);
+            border-left-color: #1db954;
+        }
+
+        .nav-item.active {
+            background: rgba(28, 185, 84, 0.2);
+            border-left-color: #1db954;
+            color: #1db954;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            width: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            height: 100vh;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #121212 0%, #1a1a1a 100%);
+        }
+
+        /* Header */
+        .header {
+            padding: 20px 32px;
+            border-bottom: 1px solid #282828;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .unique-search {
+            position: relative;
+            width: 400px;
+            height: 48px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 100%;
+            background: #181818;
+            border: 1px solid #404040;
+            border-radius: 24px;
+            padding: 0 20px 0 48px;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #1db954;
+            box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b3b3b3;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1db954, #1ed760);
+        }
+
+        /* Content Sections */
+        .content-section {
+            padding: 32px;
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .view-all {
+            color: #b3b3b3;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Music Grid */
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .music-card {
+            background: #181818;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .music-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #1db954, #1ed760);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 20px 16px 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+
+        /* List Items */
+        .music-list {
+            list-style: none;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .list-item:hover {
+            background: rgba(28, 185, 84, 0.1);
+        }
+
+        .list-item.playing {
+            background: rgba(28, 185, 84, 0.2);
+        }
+
+        .list-number {
+            width: 32px;
+            font-size: 14px;
+            color: #b3b3b3;
+            font-weight: 500;
+        }
+
+        .list-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .list-info {
+            flex: 1;
+        }
+
+        .list-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .list-artist {
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+
+        .list-duration {
+            font-size: 14px;
+            color: #b3b3b3;
+            font-weight: 500;
+        }
+
+        /* Player */
+        .player {
+            position: fixed;
+            bottom: 0;
+            left: 240px;
+            right: 0;
+            height: 90px;
+            background: #181818;
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            z-index: 1000;
+        }
+
+        .player-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .player-song-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .player-song-info h3 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .player-song-info p {
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .play-pause-btn {
+            font-size: 28px;
+            color: #1db954;
+        }
+
+        .progress-container {
+            flex: 1;
+            margin: 0 16px;
+            height: 4px;
+            background: #404040;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #1db954;
+            border-radius: 2px;
+            width: 40%;
+            transition: width 0.1s ease;
+        }
+
+        .player-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .player {
+                left: 0;
+            }
+            
+            .unique-search {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo">Sound<span style="color: #1db954;">Sphere</span></div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-section="home">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </li>
+            <li class="nav-item" data-section="library">
+                <i class="fas fa-inbox"></i>
+                <span>Library</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-history"></i>
+                <span>History</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-heart"></i>
+                <span>Liked Songs</span>
+            </li>
+            <li class="nav-item">
+                <i class="fas fa-bookmark"></i>
+                <span>Playlists</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="unique-search">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="What do you want to listen to?" id="searchInput">
+            </div>
+            <div class="profile">
+                <div class="profile-img"></div>
+                <span>John Doe</span>
+            </div>
+        </header>
+
+        <!-- Home Section -->
+        <section class="content-section active" id="home">
+            <div class="section-header">
+                <h2 class="section-title">Good Evening</h2>
+            </div>
+            <div class="music-grid">
+                <div class="music-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1487218013157-8d5d98e12055?w=400&h=400&fit=crop" alt="Daily Mix">
+                    </div>
+                    <div class="card-overlay">
+                        <h3 class="card-title">Daily Mix 1</h3>
+                        <p class="card-subtitle">Drake, Post Malone and more</p>
+                    </div>
+                </div>
+                <div class="music-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1616166693307-4825e405d4f4?w=400&h=400&fit=crop" alt="Rap">
+                    </div>
+                    <div class="card-overlay">
+                        <h3 class="card-title">RapCaviar</h3>
+                        <p class="card-subtitle">Lil Baby, DaBaby</p>
+                    </div>
+                </div>
+                <div class="music-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop" alt="Pop">
+                    </div>
+                    <div class="card-overlay">
+                        <h3 class="card-title">Pop Rising</h3>
+                        <p class="card-subtitle">Dua Lipa, The Weeknd</p>
+                    </div>
+                </div>
+                <div class="music-card">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1578631619186-3a49061f8d50?w=400&h=400&fit=crop" alt="LoFi">
+                    </div>
+                    <div class="card-overlay">
+                        <h3 class="card-title">LoFi Beats</h3>
+                        <p class="card-subtitle">Chillhop Essentials</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Library Section -->
+        <section class="content-section" id="library">
+            <div class="section-header">
+                <h2 class="section-title">Your Library</h2>
+                <a href="#" class="view-all">Create Playlist +</a>
+            </div>
+            <ul class="music-list">
+                <li class="list-item">
+                    <span class="list-number">1</span>
+                    <img src="https://images.unsplash.com/photo-1616166693307-4825e405d4f4?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Blinding Lights</div>
+                        <div class="list-artist">The Weeknd</div>
+                    </div>
+                    <span class="list-duration">3:21</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-number">2</span>
+                    <img src="https://images.unsplash.com/photo-1584198672928-b24c7675b8e8?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Levitating</div>
+                        <div class="list-artist">Dua Lipa</div>
+                    </div>
+                    <span class="list-duration">3:23</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-number">3</span>
+                    <img src="https://images.unsplash.com/photo-1617745088909-d64d779e9a4c?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Industry Baby</div>
+                        <div class="list-artist">Lil Nas X</div>
+                    </div>
+                    <span class="list-duration">3:32</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- History Section -->
+        <section class="content-section" id="history">
+            <div class="section-header">
+                <h2 class="section-title">Listening History</h2>
+            </div>
+            <ul class="music-list">
+                <li class="list-item playing">
+                    <span class="list-number">1</span>
+                    <img src="https://images.unsplash.com/photo-1487218013157-8d5d98e12055?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Stay</div>
+                        <div class="list-artist">The Kid LAROI, Justin Bieber</div>
+                    </div>
+                    <span class="list-duration">2:24</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-number">2</span>
+                    <img src="https://images.unsplash.com/photo-1611344995047-6a147827a7f8?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Good 4 U</div>
+                        <div class="list-artist">Olivia Rodrigo</div>
+                    </div>
+                    <span class="list-duration">2:58</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-number">3</span>
+                    <img src="https://images.unsplash.com/photo-1579568715236-f069dca4e16e?w=48&h=48&fit=crop" class="list-image" alt="">
+                    <div class="list-info">
+                        <div class="list-title">Sweet Child O' Mine</div>
+                        <div class="list-artist">Guns N' Roses</div>
+                    </div>
+                    <span class="list-duration">6:00</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Liked Songs Section -->
+        <section class="content-section" id="liked">
+            <div class="section-header">
+                <h2 class="section-title">Liked Songs</h2>
+                <span style="color: #b3b3b3; font-size: 14px;">45 songs, 2hr 30min</span>
+            </div>
+            <ul class="music-list">
+                <li class="list-item">
+                   
